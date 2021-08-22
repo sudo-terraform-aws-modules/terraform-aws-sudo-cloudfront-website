@@ -1,2 +1,2 @@
-# sudo-terraform-module-template
-Template repository for Terraform modules
+# sudo-terraform-aws-cloudfront-website
+Static website based on cloudfront.
