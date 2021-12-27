@@ -10,7 +10,7 @@ It will also copy the files from source directory to s3 bucket.
 
 ```hcl
 module "website" {
-  source      = "terraform-sudo-modules/aws/cloudfront"
+  source  = "sudoinclabs/sudo-cloudfront-website/aws"
   zone_name = "sudoconsultants.com"
   domain_name = "testwebsite.sudoconsultants.com"
   source_directory = "public"
