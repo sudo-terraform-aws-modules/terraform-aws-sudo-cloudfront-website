@@ -55,8 +55,10 @@ locals {
   zone_name         = var.zone_name == "" ? var.domain_name : var.zone_name
   aliases           = [var.domain_name]
 }
+
 module "acm" {
-  source      = "./modules/acm"
+  source  = "sudoinclabs/sudo-acm/aws"
+  version = "0.1.0"
   domain_name = var.domain_name
   zone_name   = local.zone_name
 }
