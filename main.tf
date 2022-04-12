@@ -58,7 +58,7 @@ locals {
 
 module "acm" {
   source  = "sudoinclabs/sudo-acm/aws"
-  version = "0.1.0"
+  version = "0.1.1"
   domain_name = var.domain_name
   zone_name   = local.zone_name
 }
