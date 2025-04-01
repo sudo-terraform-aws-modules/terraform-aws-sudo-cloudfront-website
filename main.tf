@@ -56,12 +56,13 @@ locals {
   aliases           = [var.domain_name]
 }
 
-module "acm" {
-  source  = "sudoinclabs/sudo-acm/aws"
-  version = "0.1.1"
-  domain_name = var.domain_name
-  zone_name   = local.zone_name
-}
+# TODO Add support again for the certificate
+# module "acm" {
+#   source  = "sudoinclabs/sudo-acm/aws"
+#   version = "0.1.1"
+#   domain_name = var.domain_name
+#   zone_name   = local.zone_name
+# }
 resource "aws_cloudfront_origin_access_identity" "cloudfront_origin_id" {
   comment = local.distribution_name
 }
@@ -118,20 +119,27 @@ resource "aws_cloudfront_distribution" "distribution" {
     minimum_protocol_version       = "TLSv1"
     cloudfront_default_certificate = true
   }*/
-  viewer_certificate {
-    acm_certificate_arn      = module.acm.arn
-    ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2021"
+
+  dynamic "viewer_certificate" {
+    for_each = var.acm_certificate_arn != "" ? [1] : []
+    content {
+      acm_certificate_arn = var.acm_certificate_arn
+      ssl_support_method       = "sni-only"
+      minimum_protocol_version = "TLSv1.2_2021"
+    }
   }
 }
 data "aws_route53_zone" "route53_cloudfront_zone" {
+  count = var.zone_name != null ? 1 : 0
+
   name = local.zone_name
 }
 resource "aws_route53_record" "route53_distribution_record" {
+  count = var.zone_name != null ? 1 : 0
   allow_overwrite = true
   name            = var.domain_name
   type            = "A"
-  zone_id         = data.aws_route53_zone.route53_cloudfront_zone.zone_id
+  zone_id         = data.aws_route53_zone.route53_cloudfront_zone[0].zone_id
   alias {
     name                   = aws_cloudfront_distribution.distribution.domain_name
     zone_id                = aws_cloudfront_distribution.distribution.hosted_zone_id

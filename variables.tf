@@ -5,7 +5,7 @@ variable "domain_name" {
 variable "zone_name" {
   type        = string
   description = "Specify the domain to host on cloudfront"
-  default     = ""
+  default     = null
 }
 variable "comment" {
   type        = string
@@ -39,4 +39,11 @@ variable "acl" {
   type = string
   description = "(optional) acl for objects"
   default = "private"
+}
+
+variable "acm_certificate_arn" {
+  type        = string
+  description = "(optional) ACM certificate ARN"
+  default     = ""
+
 }
