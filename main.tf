@@ -71,6 +71,8 @@ resource "aws_cloudfront_distribution" "distribution" {
 
   aliases = local.aliases
   comment = var.comment
+  default_root_object             = var.default_root_object
+
   default_cache_behavior {
     allowed_methods = [
       "HEAD",
@@ -126,6 +128,17 @@ resource "aws_cloudfront_distribution" "distribution" {
       acm_certificate_arn = var.acm_certificate_arn
       ssl_support_method       = "sni-only"
       minimum_protocol_version = "TLSv1.2_2021"
+    }
+  }
+  dynamic "custom_error_response" {
+    for_each = length(flatten([var.custom_error_response])[0]) > 0 ? flatten([var.custom_error_response]) : []
+
+    content {
+      error_code = custom_error_response.value["error_code"]
+
+      response_code         = lookup(custom_error_response.value, "response_code", null)
+      response_page_path    = lookup(custom_error_response.value, "response_page_path", null)
+      error_caching_min_ttl = lookup(custom_error_response.value, "error_caching_min_ttl", null)
     }
   }
 }

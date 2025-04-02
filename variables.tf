@@ -47,3 +47,15 @@ variable "acm_certificate_arn" {
   default     = ""
 
 }
+
+variable "custom_error_response" {
+  description = "One or more custom error response elements"
+  type        = any
+  default     = {}
+}
+
+variable "default_root_object" {
+  description = "(optional) Default root object for the distribution"
+  type        = string
+  default     = "index.html"
+}
