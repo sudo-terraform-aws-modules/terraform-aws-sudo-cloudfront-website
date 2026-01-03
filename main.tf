@@ -6,11 +6,6 @@ resource "aws_s3_bucket" "s3_cloudfront_bucket" {
   }
 }
 
-resource "aws_s3_bucket_acl" "s3_cloudfront_bucket_acl" {
-  bucket = aws_s3_bucket.s3_cloudfront_bucket.id
-  acl    = "private"
-}
-
 resource "aws_s3_bucket_policy" "s3_policy_cloudfront_origin" {
   bucket = aws_s3_bucket.s3_cloudfront_bucket.id
   policy = <<CLOUDFRONTPOLICY
