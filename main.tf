@@ -42,10 +42,7 @@ resource "aws_s3_object" "s3_cloudfront_bucket_site" {
   content_type = lookup(local.mime_types, regex("\\.[^.]+$", each.value), null)
 }
 
-moved {
-  from = aws_s3_bucket_object.s3_cloudfront_bucket_site
-  to = aws_s3_object.s3_cloudfront_bucket_site
-}
+
 resource "aws_s3_object" "s3_cloudfront_bucket_index_html" {
   count                  = var.source_file != "" ? 1 : 0
   key                    = var.uri_path
@@ -57,10 +54,7 @@ resource "aws_s3_object" "s3_cloudfront_bucket_index_html" {
   acl = var.acl
 }
 
-moved {
-  from = aws_s3_bucket_object.s3_cloudfront_bucket_index_html
-  to = aws_s3_object.s3_cloudfront_bucket_index_html
-}
+
 locals {
   bucket_name       = var.bucket_name == "" ? "${local.distribution_name}-cloudfront-bucket" : var.bucket_name
   s3_origin_id      = var.domain_name
