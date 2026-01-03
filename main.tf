@@ -1,10 +1,14 @@
 resource "aws_s3_bucket" "s3_cloudfront_bucket" {
   bucket = local.bucket_name
-  acl    = "private"
 
   tags = {
     Name = "${var.domain_name} - bucket"
   }
+}
+
+resource "aws_s3_bucket_acl" "s3_cloudfront_bucket_acl" {
+  bucket = aws_s3_bucket.s3_cloudfront_bucket.id
+  acl    = "private"
 }
 
 resource "aws_s3_bucket_policy" "s3_policy_cloudfront_origin" {
@@ -27,7 +31,7 @@ resource "aws_s3_bucket_policy" "s3_policy_cloudfront_origin" {
 CLOUDFRONTPOLICY
 }
 
-resource "aws_s3_bucket_object" "s3_cloudfront_bucket_site" {
+resource "aws_s3_object" "s3_cloudfront_bucket_site" {
   for_each = fileset("${path.root}/${var.source_directory}", "**/*")
 
   bucket = aws_s3_bucket.s3_cloudfront_bucket.id
@@ -38,7 +42,7 @@ resource "aws_s3_bucket_object" "s3_cloudfront_bucket_site" {
   content_type = lookup(local.mime_types, regex("\\.[^.]+$", each.value), null)
 }
 
-resource "aws_s3_bucket_object" "s3_cloudfront_bucket_index_html" {
+resource "aws_s3_object" "s3_cloudfront_bucket_index_html" {
   count                  = var.source_file != "" ? 1 : 0
   key                    = var.uri_path
   bucket                 = aws_s3_bucket.s3_cloudfront_bucket.id
