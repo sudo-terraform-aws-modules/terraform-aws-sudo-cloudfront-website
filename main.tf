@@ -1,9 +1,9 @@
 resource "aws_s3_bucket" "s3_cloudfront_bucket" {
   bucket = local.bucket_name
 
-  tags = {
+  tags = merge(var.tags, {
     Name = "${var.domain_name} - bucket"
-  }
+  })
 }
 
 resource "aws_s3_bucket_policy" "s3_policy_cloudfront_origin" {
@@ -27,7 +27,7 @@ CLOUDFRONTPOLICY
 }
 
 resource "aws_s3_object" "s3_cloudfront_bucket_site" {
-  for_each = fileset("${path.root}/${var.source_directory}", "**/*")
+  for_each = var.source_directory != "" ? fileset("${path.root}/${var.source_directory}", "**/*") : toset([])
 
   bucket = aws_s3_bucket.s3_cloudfront_bucket.id
   key    = each.value
@@ -46,7 +46,6 @@ resource "aws_s3_object" "s3_cloudfront_bucket_index_html" {
   server_side_encryption = "AES256"
   etag                   = filemd5(var.source_file)
   content_type           = lookup(local.mime_types, regex("\\.[^.]+$", "index.html"), null)
-  acl = var.acl
 }
 
 
@@ -54,8 +53,8 @@ locals {
   bucket_name       = var.bucket_name == "" ? "${local.distribution_name}-cloudfront-bucket" : var.bucket_name
   s3_origin_id      = var.domain_name
   distribution_name = var.domain_name
-  zone_name         = var.zone_name == "" ? var.domain_name : var.zone_name
-  aliases           = [var.domain_name]
+  zone_name         = var.zone_name != null ? var.zone_name : var.domain_name
+  aliases           = var.acm_certificate_arn != "" ? [var.domain_name] : []
 }
 
 # TODO Add support again for the certificate
@@ -99,6 +98,7 @@ resource "aws_cloudfront_distribution" "distribution" {
   }
   enabled         = true
   is_ipv6_enabled = true
+  tags            = var.tags
 
   lifecycle {
     ignore_changes = [default_cache_behavior]
@@ -118,18 +118,19 @@ resource "aws_cloudfront_distribution" "distribution" {
       restriction_type = "none"
     }
   }
-  /*viewer_certificate {
-    ssl_support_method             = null
-    minimum_protocol_version       = "TLSv1"
-    cloudfront_default_certificate = true
-  }*/
-
   dynamic "viewer_certificate" {
     for_each = var.acm_certificate_arn != "" ? [1] : []
     content {
-      acm_certificate_arn = var.acm_certificate_arn
+      acm_certificate_arn      = var.acm_certificate_arn
       ssl_support_method       = "sni-only"
       minimum_protocol_version = "TLSv1.2_2021"
+    }
+  }
+
+  dynamic "viewer_certificate" {
+    for_each = var.acm_certificate_arn == "" ? [1] : []
+    content {
+      cloudfront_default_certificate = true
     }
   }
   dynamic "custom_error_response" {

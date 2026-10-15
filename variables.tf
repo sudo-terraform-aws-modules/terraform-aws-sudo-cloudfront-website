@@ -4,7 +4,7 @@ variable "domain_name" {
 }
 variable "zone_name" {
   type        = string
-  description = "Specify the domain to host on cloudfront"
+  description = "Route53 hosted zone name for DNS record creation. Defaults to domain_name if not specified."
   default     = null
 }
 variable "comment" {
@@ -31,14 +31,20 @@ variable "source_directory" {
 }
 variable "bucket_name" {
   type        = string
-  description = "(optional) describe your variable"
+  description = "Override the S3 bucket name. Defaults to <domain_name>-cloudfront-bucket."
   default     = ""
 }
 
 variable "acl" {
-  type = string
-  description = "(optional) acl for objects"
-  default = "private"
+  type        = string
+  description = "ACL for S3 objects uploaded via source_file."
+  default     = "private"
+}
+
+variable "tags" {
+  type        = map(string)
+  description = "Tags to apply to all resources created by this module."
+  default     = {}
 }
 
 variable "acm_certificate_arn" {
